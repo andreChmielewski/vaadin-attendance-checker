@@ -32,8 +32,11 @@ public class HomeView extends HorizontalLayout {
         grid.setItems(new Student("Dave"));
         grid.addColumn(Student::getName).setHeader("Name");
         leftSide.add(grid);
+        leftSide.setSizeFull();
+        leftSide.setSpacing(false);
+        leftSide.setJustifyContentMode(JustifyContentMode.CENTER);
         leftSide.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-
+        leftSide.getStyle().set("text-align", "center");
 
         // Right side
         rightSide.add(new H1("Astro Club Meeting"));
@@ -41,12 +44,13 @@ public class HomeView extends HorizontalLayout {
         img.setWidth("200px");
         rightSide.add(img);
         rightSide.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        rightSide.setSizeFull();
+        rightSide.setJustifyContentMode(JustifyContentMode.AROUND);
 
-//        setSpacing(false);
-//        setSizeFull();
-//        setJustifyContentMode(JustifyContentMode.CENTER);
-//        setDefaultVerticalComponentAlignment(Alignment.CENTER);
-//        getStyle().set("text-align", "center");
+
+        // Overall view
+        setSizeFull();
+
     }
 
 }
