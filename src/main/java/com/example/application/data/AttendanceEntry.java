@@ -2,7 +2,7 @@ package com.example.application.data;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 @Entity
 public class AttendanceEntry {
@@ -10,10 +10,11 @@ public class AttendanceEntry {
     @Id
     private String date;
 
-    private LinkedList<Student> students;
+    private ArrayList<Student> students;
 
     public AttendanceEntry(String date){
         this.date = date;
+        students = new ArrayList<Student>();
 
     }
 

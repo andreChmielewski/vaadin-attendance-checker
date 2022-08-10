@@ -23,8 +23,16 @@ public class Student {
     @Nonnull
     private String name;
 
+    private boolean isNew;
+
     public Student(String name){
         this.name = name;
+        this.isNew = false;
+    }
+
+    public Student(String name, boolean isNew){
+        this.name = name;
+        this.isNew = isNew;
     }
 
     @Nonnull
@@ -36,4 +44,8 @@ public class Student {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

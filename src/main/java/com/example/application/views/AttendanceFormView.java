@@ -1,6 +1,7 @@
 package com.example.application.views;
 
 import com.example.application.data.Student;
+import com.example.application.services.AttendEntryService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H1;
@@ -12,34 +13,68 @@ import com.vaadin.flow.router.Route;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
-@Route(value = "form", registerAtStartup = true)
+@Route(registerAtStartup = false)
 public class AttendanceFormView extends VerticalLayout {
     private TextField name = new TextField("First and last name (How you'd like it to appear");
     private ComboBox dropdown = new ComboBox("Select your name from below");
     private Button button = new Button("Submit");
+    private AttendEntryService attendEntryService;
 
-    AttendanceFormView(List<Student> students){
+    private H3 message1, message2;
+
+
+
+    AttendanceFormView(AttendEntryService attendEntryService){
+        this.attendEntryService = attendEntryService;
         H1 title = new H1("Astro Club Attendance");
         SimpleDateFormat pattern = new SimpleDateFormat("E MMM dd, YYYY");
         String date = pattern.format(new Date());
         H2 todaysDate = new H2(date);
-        H3 firstMeeting = new H3("Is today your first meeting?");
-        add(title, todaysDate,firstMeeting, name, dropdown);
+        add(title, todaysDate);
+        configureAttendanceForm();
 
 
-//        FormLayout formLayout = new FormLayout();
-//        formLayout.add(title, todaysDate,firstMeeting, name, dropdown);
-//        add(formLayout);
-        dropdown.setItems(students);
-        button.addClickListener(event -> buttonPressed());
+        // Formatting
+        setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        setSizeFull();
+        setJustifyContentMode(JustifyContentMode.CENTER);
 
 
     }
 
+    private void configureAttendanceForm() {
+        message1 = new H3("Is today your first meeting?");
+        message2 = new H3("Are you a returning student?");
+        dropdown.setItems(attendEntryService.getStudents());
+        add(message1, name, message2, dropdown);
+
+        button.addClickListener(event -> buttonPressed());
+        add(button);
+    }
+
     private void buttonPressed() {
-        
+        String studentName;
+        Student student;
+        if(name.isEmpty()){
+            studentName = dropdown.getValue().toString();
+            student = new Student(studentName);
+        }
+        else {
+            studentName = name.getValue().toString();
+            student = new Student(studentName, true);
+        }
+        System.out.println(studentName);
+        attendEntryService.addStudentToGrid(student);
+        closeForm(studentName);
+
+    }
+
+    private void closeForm(String studentName) {
+        remove(name, message2, dropdown, button);
+        message1.setText("Thank you for submitting your attendance, " + studentName);
+
+
     }
 
 
