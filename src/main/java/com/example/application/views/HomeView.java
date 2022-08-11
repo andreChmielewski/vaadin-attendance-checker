@@ -1,8 +1,10 @@
 package com.example.application.views;
 
 
+import com.example.application.data.AttendanceEntry;
 import com.example.application.data.Student;
 import com.example.application.services.AttendEntryService;
+import com.example.application.services.StudentRegistrationEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
@@ -17,29 +19,29 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Random;
 
 @PageTitle("Home")
 @Route(value = "", layout = MainLayout.class)
-public class HomeView extends HorizontalLayout {
+public class HomeView extends HorizontalLayout implements ApplicationListener<StudentRegistrationEvent> {
 
     private final AttendEntryService attendEntryService;
+    private AttendanceEntry todaysAttendanceEntry;
     private Button button = new Button("Start");
     private H2 dateString = new H2("---");
     private Image img = new Image("images/empty-plant.png", "placeholder plant");
     private Grid<Student> grid = new Grid<>(Student.class, false);
-    private ArrayList<Student> attendanceList;
     private AttendanceFormView formView;
     Anchor link = new Anchor("#", img);
 
-    public HomeView(AttendEntryService attendEntryService) {
+
+    public HomeView(AttendEntryService attendEntryService, ConfigurableApplicationContext applicationContext) {
         this.attendEntryService = attendEntryService;
-        this.attendEntryService.setHomeView(this);
-        this.attendanceList = this.attendEntryService.getAttendanceList();
         // Add two side-by-side vertical layouts (columns) to hold other UI components
         VerticalLayout leftSide = new VerticalLayout();
         VerticalLayout rightSide = new VerticalLayout();
@@ -51,8 +53,6 @@ public class HomeView extends HorizontalLayout {
 
 
         // Grid bound to Student class takes Student objects
-        attendanceList.add(new Student("Dave"));
-        grid.setItems(attendanceList);
         grid.addColumn(Student::getName).setHeader("Name");
         leftSide.add(grid);
 
@@ -83,6 +83,8 @@ public class HomeView extends HorizontalLayout {
         // Adding listener to button component
         button.addClickListener(clickEvent -> pressedButton());
 
+        applicationContext.addApplicationListener(this);
+
     }
 
     private void pressedButton() {
@@ -111,7 +113,7 @@ public class HomeView extends HorizontalLayout {
             // method returns URL for form, which will be
             // incorporated into QR code
 //        FORM_URL = createAttendanceForm(date)
-            String formUrl = createAttendanceForm();
+            String formUrl = createAttendanceForm(date);
 
             // Generating QR Code image source link
 //        IMAGE_URL = getQrCode(FORM_URL)
@@ -121,7 +123,8 @@ public class HomeView extends HorizontalLayout {
             img.setSrc(qrCodeUrl);
             link.setHref(formUrl);
 
-
+//            getAttendanceList();
+            updateGrid();
 
         }
 //else if BUTTON.text = “Stop”
@@ -130,10 +133,10 @@ public class HomeView extends HorizontalLayout {
 //        closeAttendanceForm()
             closeAttendanceForm();
 //        saveStudentsToDatabase(STUDENT_LIST)
-            saveStudentsToDatabase(attendanceList);
+            saveStudentsToDatabase();
 //        HomeView.list = “”
-            attendanceList.clear();
-            grid.setItems(attendanceList);
+            todaysAttendanceEntry.clearList();
+            updateGrid();
 
             // Resetting the components back to their original state
             // Components can be modified with built-in methods
@@ -151,7 +154,8 @@ public class HomeView extends HorizontalLayout {
 
     }
 
-    private void saveStudentsToDatabase(ArrayList<Student> studentList) {
+    private void saveStudentsToDatabase() {
+        attendEntryService.saveAttendEntry(todaysAttendanceEntry);
     }
 
     private void closeAttendanceForm() {
@@ -163,9 +167,8 @@ public class HomeView extends HorizontalLayout {
         return baseUrl + formUrl;
     }
 
-    private String createAttendanceForm() {
-        ArrayList<Student> students = (ArrayList<Student>) attendEntryService.getStudents();
-        formView = new AttendanceFormView(attendEntryService);
+    private String createAttendanceForm(String date) {
+        todaysAttendanceEntry = attendEntryService.getEntryFor(date);
         Random rand = new Random();
         int num = rand.nextInt(1000);
 //        System.out.println(num);
@@ -185,15 +188,25 @@ public class HomeView extends HorizontalLayout {
     }
 
     public void updateGrid() {
-        grid.setItems(attendanceList);
+        grid.setItems(todaysAttendanceEntry.getAttendanceList());
 //        grid.setItems(new Student("Bob"));
-
-
         grid.getDataProvider().refreshAll();
 
 
         System.out.println("Grid updated");
-        System.out.println(attendanceList);
+        System.out.println(todaysAttendanceEntry.getAttendanceList());
+
+    }
+
+    @Override
+    public void onApplicationEvent(StudentRegistrationEvent studentRegEvent) {
+        System.out.println("Event received by HomeView");
+        Student student = studentRegEvent.getStudent();
+        todaysAttendanceEntry.addToAttendanceList(student);
+        String studentName = student.getName();
+        updateGrid();
+
+
 
     }
 }

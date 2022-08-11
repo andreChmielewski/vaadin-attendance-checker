@@ -9,14 +9,26 @@ public class AttendanceEntry {
 
     @Id
     private String date;
+    private ArrayList<Student> attendanceList;
 
-    private ArrayList<Student> students;
+    public AttendanceEntry() {
+    }
 
     public AttendanceEntry(String date){
         this.date = date;
-        students = new ArrayList<Student>();
+        attendanceList = new ArrayList<Student>();
+    }
 
+    public ArrayList<Student> getAttendanceList() {
+        return attendanceList;
     }
 
 
+    public void clearList() {
+        attendanceList.clear();
+    }
+
+    public void addToAttendanceList(Student student) {
+        attendanceList.add(student);
+    }
 }

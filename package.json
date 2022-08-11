@@ -258,8 +258,8 @@
     "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
     "lit": "$lit",
     "@polymer/polymer": "$@polymer/polymer",
-    "chokidar": "$chokidar",
     "date-fns": "$date-fns",
+    "chokidar": "$chokidar",
     "line-awesome": "$line-awesome"
   },
   "vaadin": {

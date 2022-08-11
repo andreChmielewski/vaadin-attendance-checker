@@ -2,6 +2,7 @@ package com.example.application.views;
 
 import com.example.application.data.Student;
 import com.example.application.services.AttendEntryService;
+import com.example.application.services.StudentRegistrationEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.H1;
@@ -10,12 +11,17 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 @Route(registerAtStartup = false)
 public class AttendanceFormView extends VerticalLayout {
+
+
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     private TextField name = new TextField("First and last name (How you'd like it to appear");
     private ComboBox dropdown = new ComboBox("Select your name from below");
     private Button button = new Button("Submit");
@@ -25,7 +31,8 @@ public class AttendanceFormView extends VerticalLayout {
 
 
 
-    AttendanceFormView(AttendEntryService attendEntryService){
+    AttendanceFormView(AttendEntryService attendEntryService, ApplicationEventPublisher applicationEventPublisher){
+        this.applicationEventPublisher = applicationEventPublisher;
         this.attendEntryService = attendEntryService;
         H1 title = new H1("Astro Club Attendance");
         SimpleDateFormat pattern = new SimpleDateFormat("E MMM dd, YYYY");
@@ -64,8 +71,8 @@ public class AttendanceFormView extends VerticalLayout {
             studentName = name.getValue().toString();
             student = new Student(studentName, true);
         }
-        System.out.println(studentName);
-        attendEntryService.addStudentToGrid(student);
+        System.out.println(studentName + " registered");
+        applicationEventPublisher.publishEvent(new StudentRegistrationEvent(this, student));
         closeForm(studentName);
 
     }
