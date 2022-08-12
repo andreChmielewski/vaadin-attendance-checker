@@ -1,11 +1,13 @@
 package com.example.application.data;
 
 import javax.annotation.Nonnull;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
 @Entity
+@Embeddable
 public class Student {
 
     public Integer getId() {

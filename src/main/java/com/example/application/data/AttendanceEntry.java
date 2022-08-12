@@ -2,10 +2,9 @@ package com.example.application.data;
 
 import org.hibernate.annotations.Type;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -18,7 +17,9 @@ public class AttendanceEntry {
 
     private String date;
 
-    private ArrayList<Student> attendanceList = new ArrayList<Student>();;
+//    @ElementCollection
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Student> attendanceList = new ArrayList<Student>();;
 
     public AttendanceEntry() {
     }
@@ -28,7 +29,7 @@ public class AttendanceEntry {
     }
 
     public ArrayList<Student> getAttendanceList() {
-        return attendanceList;
+        return (ArrayList<Student>) attendanceList;
     }
 
 
@@ -47,4 +48,5 @@ public class AttendanceEntry {
     public void setId(UUID id) {
         this.id = id;
     }
+
 }
