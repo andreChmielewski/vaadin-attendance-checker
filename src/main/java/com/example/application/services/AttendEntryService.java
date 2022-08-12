@@ -7,7 +7,6 @@ import com.example.application.repositories.StudentRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 @Service
 public class AttendEntryService {
@@ -26,9 +25,10 @@ public class AttendEntryService {
     }
 
     public AttendanceEntry getEntryFor(String date){
-        Optional<AttendanceEntry> entry = entryRepository.findById(date);
-        if(entry.isPresent()){
-            return entry.get();
+
+        AttendanceEntry entry = entryRepository.findByDate(date);
+        if(entry != null){
+            return entry;
         }
         return new AttendanceEntry(date);
     }
