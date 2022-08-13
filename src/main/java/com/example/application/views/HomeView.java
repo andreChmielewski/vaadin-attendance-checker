@@ -133,7 +133,7 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
 //        closeAttendanceForm()
             closeAttendanceForm();
 //        saveStudentsToDatabase(STUDENT_LIST)
-            saveStudentsToDatabase();
+            todaysAttendanceEntry = saveStudentsToDatabase();
 //        HomeView.list = “”
             todaysAttendanceEntry.clearList();
             updateGrid();
@@ -154,8 +154,8 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
 
     }
 
-    private void saveStudentsToDatabase() {
-        attendEntryService.saveAttendEntry(todaysAttendanceEntry);
+    private AttendanceEntry saveStudentsToDatabase() {
+        return attendEntryService.saveAttendEntry(todaysAttendanceEntry);
     }
 
     private void closeAttendanceForm() {
@@ -193,8 +193,8 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
         grid.getDataProvider().refreshAll();
 
 
-        System.out.println("Grid updated");
-        System.out.println(todaysAttendanceEntry.getAttendanceList());
+//        System.out.println("Grid updated");
+//        System.out.println(todaysAttendanceEntry.getAttendanceList());
 
     }
 

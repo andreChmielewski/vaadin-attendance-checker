@@ -6,7 +6,7 @@ import com.example.application.repositories.AttendanceEntryRepository;
 import com.example.application.repositories.StudentRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class AttendEntryService {
@@ -20,8 +20,8 @@ public class AttendEntryService {
 
     }
 
-    public void saveAttendEntry(AttendanceEntry entry){
-        entryRepository.save(entry);
+    public AttendanceEntry saveAttendEntry(AttendanceEntry entry){
+        return entryRepository.save(entry);
     }
 
     public AttendanceEntry getEntryFor(String date){
@@ -33,8 +33,13 @@ public class AttendEntryService {
         return new AttendanceEntry(date);
     }
 
-    public ArrayList<Student> getStudents() {
-        return (ArrayList<Student>) studentRepository.findAll();
+    public List<Student> getStudents() {
+        return studentRepository.findAll();
+
+    }
+
+    public Student addStudent(Student student){
+        return studentRepository.save(student);
     }
 
 

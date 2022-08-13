@@ -18,8 +18,8 @@ public class AttendanceEntry {
     private String date;
 
 //    @ElementCollection
-    @OneToMany(cascade = CascadeType.ALL)
-    private List<Student> attendanceList = new ArrayList<Student>();;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Student> attendanceList = new ArrayList<Student>();
 
     public AttendanceEntry() {
     }
@@ -28,8 +28,8 @@ public class AttendanceEntry {
         this.date = date;
     }
 
-    public ArrayList<Student> getAttendanceList() {
-        return (ArrayList<Student>) attendanceList;
+    public List<Student> getAttendanceList() {
+        return attendanceList;
     }
 
 

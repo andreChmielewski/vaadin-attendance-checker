@@ -69,7 +69,8 @@ public class AttendanceFormView extends VerticalLayout {
         }
         else {
             studentName = name.getValue().toString();
-            student = new Student(studentName, true);
+            student = attendEntryService.addStudent(new Student(studentName));
+
         }
         System.out.println(studentName + " registered");
         applicationEventPublisher.publishEvent(new StudentRegistrationEvent(this, student));

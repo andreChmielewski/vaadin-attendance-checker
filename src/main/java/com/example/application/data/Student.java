@@ -10,10 +10,12 @@ import javax.persistence.Id;
 @Embeddable
 public class Student {
 
+    public Student() {
+    }
+
     public Integer getId() {
         return id;
     }
-
     public void setId(Integer id) {
         this.id = id;
     }
@@ -25,16 +27,8 @@ public class Student {
     @Nonnull
     private String name;
 
-    private boolean isNew;
-
     public Student(String name){
         this.name = name;
-        this.isNew = false;
-    }
-
-    public Student(String name, boolean isNew){
-        this.name = name;
-        this.isNew = isNew;
     }
 
     @Nonnull
