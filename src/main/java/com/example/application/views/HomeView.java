@@ -1,7 +1,11 @@
 package com.example.application.views;
 
 
+import com.example.application.data.AttendanceEntry;
 import com.example.application.data.Student;
+import com.example.application.events.StudentRegEvent;
+import com.example.application.services.AttendanceEntryService;
+import com.example.application.services.StudentService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
@@ -12,22 +16,31 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletRequest;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.Random;
 
 @PageTitle("Home")
 @Route(value = "", layout = MainLayout.class)
-public class HomeView extends HorizontalLayout {
+public class HomeView extends HorizontalLayout implements ApplicationListener<StudentRegEvent> {
 
     private Button button = new Button("Start");
     private H2 dateString = new H2("---");
     private Image img = new Image("images/empty-plant.png", "placeholder plant");
     private Grid<Student> grid = new Grid<>(Student.class, false);
-    private ArrayList<Student> studentList = new ArrayList<Student>();
+    private AttendanceEntry attendanceEntry;
+    private StudentService studentService;
+    private AttendanceEntryService attendService;
 
-    public HomeView() {
+    public HomeView(AttendanceEntryService attendService, StudentService studentService, ConfigurableApplicationContext applicationContext) {
+        this.studentService = studentService;
+        this.attendService = attendService;
         VerticalLayout leftSide = new VerticalLayout();
         VerticalLayout rightSide = new VerticalLayout();
         add(leftSide, rightSide);
@@ -35,8 +48,6 @@ public class HomeView extends HorizontalLayout {
         // Left side
         leftSide.add(button);
         leftSide.add(new H2("Present students"));
-        studentList.add(new Student("Dave"));
-        grid.setItems(studentList);
         grid.addColumn(Student::getName).setHeader("Name");
         leftSide.add(grid);
         leftSide.setSizeFull();
@@ -61,6 +72,12 @@ public class HomeView extends HorizontalLayout {
         // Button
         button.addClickListener(clickEvent -> pressedButton());
 
+        // Add FormView event listener
+        applicationContext.addApplicationListener(this);
+
+        // Refresh button for debugging purposes
+        leftSide.add(new Button("Refresh", e -> {grid.getDataProvider().refreshAll();}));
+
     }
 
     private void pressedButton() {
@@ -80,8 +97,12 @@ public class HomeView extends HorizontalLayout {
 //        MainView.date = DATE_STRING
             dateString.setText(date);
 
+            // Get or create attendance entry for today
+            attendanceEntry = getAttendanceEntry(date);
+            updateGrid();
+
 //        FORM_URL = createAttendanceForm(date)
-            String formUrl = createAttendanceForm(date);
+            String formUrl = openAttendanceForm();
 
 //        IMAGE_URL = getQrCode(FORM_URL)
             String qrCodeUrl = getQrCodeUrl(formUrl);
@@ -99,10 +120,10 @@ public class HomeView extends HorizontalLayout {
 //        MainView.qrcode = Image(null)
             img.setSrc("images/empty-plant.png");
 //        saveStudentsToDatabase(STUDENT_LIST)
-            saveStudentsToDatabase(studentList);
+            saveEntryToDatabase(attendanceEntry);
 //        MainView.list = “”
-            studentList.clear();
-            grid.setItems(studentList);
+            clearGrid();
+
 
 //        BUTTON.text = “Start”
             button.setText("Start");
@@ -115,10 +136,27 @@ public class HomeView extends HorizontalLayout {
 
     }
 
-    private void saveStudentsToDatabase(ArrayList<Student> studentList) {
+    private void clearGrid() {
+        grid.setItems();
+    }
+
+    private AttendanceEntry getAttendanceEntry(String date) {
+        AttendanceEntry entry = attendService.getEntryByDate(date);
+        if(entry == null){
+            System.out.println("New entry created");
+            return new AttendanceEntry(date);
+        }
+        System.out.println("Previous entry accessed");
+        return entry;
+    }
+
+    private AttendanceEntry saveEntryToDatabase(AttendanceEntry entry) {
+        studentService.addStudents(entry.getAttendanceList());
+        return attendService.saveEntry(entry);
     }
 
     private void closeAttendanceForm() {
+        RouteConfiguration.forApplicationScope().removeRoute(FormView.class);
     }
 
     private String getQrCodeUrl(String formUrl) {
@@ -126,8 +164,27 @@ public class HomeView extends HorizontalLayout {
         return baseUrl + formUrl;
     }
 
-    private String createAttendanceForm(String date) {
-        return "http://webhamster.com";
+    private String openAttendanceForm() {
+//        FORM_PATH = Random(0,10000) // generate a random number
+        Random rand = new Random();
+        int num = rand.nextInt(10000);
+        String formPath = "form" + num;
+//        FORM.setRoutePath(FORM_PATH)
+        RouteConfiguration.forApplicationScope().setRoute(formPath, FormView.class);
+//        return FORM_PATH
+        String baseUrl = ((VaadinServletRequest) VaadinService.getCurrentRequest()).getServerName();
+//        return baseUrl + "/" + formPath; // for production
+        return baseUrl + ":8080/" + formPath; // for development
     }
 
+    @Override
+    public void onApplicationEvent(StudentRegEvent event) {
+        attendanceEntry.addStudentToAttendance(event.getStudent());
+        updateGrid();
+    }
+
+    private void updateGrid() {
+        grid.setItems(attendanceEntry.getAttendanceList());
+        grid.getDataProvider().refreshAll();
+    }
 }
