@@ -9,6 +9,7 @@ import com.example.application.services.StudentService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
@@ -33,10 +34,12 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
     private Button button = new Button("Start");
     private H2 dateString = new H2("---");
     private Image img = new Image("images/empty-plant.png", "placeholder plant");
+    private Anchor link = new Anchor("#", img);
     private Grid<Student> grid = new Grid<>(Student.class, false);
     private AttendanceEntry attendanceEntry;
     private StudentService studentService;
     private AttendanceEntryService attendService;
+
 
     public HomeView(AttendanceEntryService attendService, StudentService studentService, ConfigurableApplicationContext applicationContext) {
         this.studentService = studentService;
@@ -60,7 +63,7 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
         rightSide.add(new H1("Astro Club Meeting"));
         rightSide.add(dateString);
         img.setWidth("250px");
-        rightSide.add(img);
+        rightSide.add(link);
         rightSide.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
         rightSide.setSizeFull();
         rightSide.setJustifyContentMode(JustifyContentMode.START);
@@ -108,6 +111,8 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
             String qrCodeUrl = getQrCodeUrl(formUrl);
 
 //        MainView.qrcode = Image(IMAGE_URL)
+            link.setHref(formUrl);
+            link.setTarget("_blank");
             img.setSrc(qrCodeUrl);
 
         }
@@ -119,6 +124,8 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
 
 //        MainView.qrcode = Image(null)
             img.setSrc("images/empty-plant.png");
+            link.setHref("#");
+            link.setTarget("_self");
 //        saveStudentsToDatabase(STUDENT_LIST)
             saveEntryToDatabase(attendanceEntry);
 //        MainView.list = “”
@@ -173,8 +180,10 @@ public class HomeView extends HorizontalLayout implements ApplicationListener<St
         RouteConfiguration.forApplicationScope().setRoute(formPath, FormView.class);
 //        return FORM_PATH
         String baseUrl = ((VaadinServletRequest) VaadinService.getCurrentRequest()).getServerName();
-//        return baseUrl + "/" + formPath; // for production
-        return baseUrl + ":8080/" + formPath; // for development
+        if(baseUrl.equals("localhost")){
+            baseUrl += ":8080";
+        }
+        return "http://" + baseUrl + "/" + formPath; // for production
     }
 
     @Override
